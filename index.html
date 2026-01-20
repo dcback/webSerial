@@ -1,132 +1,154 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-  <meta charset='UTF-8'>
-  <meta name='viewport' content='width=device-width, initial-scale=1.0'>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>WebSerial Console (CMD Presets)</title>
-  <script src='https://cdn.tailwindcss.com'></script>
+  <script src="https://cdn.tailwindcss.com"></script>
 </head>
 
-<body class='bg-gray-900 text-gray-100 p-5'>
-<div id='mainLayout' class='flex flex-row gap-6 w-full'>
+<body class="bg-gray-900 text-gray-100 p-3 sm:p-5">
+  <!-- 모바일: 세로 / lg 이상: 가로 -->
+  <div id="mainLayout" class="flex flex-col lg:flex-row gap-4 lg:gap-6 w-full">
 
-  <!-- LEFT PANEL (60%) -->
-  <div id="consolePanel" class='w-[60%] bg-gray-800 p-5 rounded-xl shadow-lg border border-gray-700'>
-    <!-- 타이틀 + 프리셋 버튼 같은 줄 -->
-    <div class="flex justify-between items-center mb-4">
-      <h2 class='text-3xl font-bold'>WebSerial Console</h2>
-      <button id='togglePresetBtn'
-              class='bg-gray-700 hover:bg-gray-600 px-4 py-0.5 rounded border border-gray-600'>
-        프리셋
-      </button>
-    </div>
+    <!-- LEFT PANEL -->
+    <div id="consolePanel" class="w-full lg:w-[60%] bg-gray-800 p-4 sm:p-5 rounded-xl shadow-lg border border-gray-700">
+      <!-- 타이틀 + 프리셋 버튼 -->
+      <div class="flex justify-between items-center mb-4">
+        <h2 class="text-2xl sm:text-3xl font-bold">WebSerial Console</h2>
+        <button id="togglePresetBtn" class="bg-gray-700 hover:bg-gray-600 px-3 sm:px-4 py-1 rounded border border-gray-600">
+          프리셋
+        </button>
+      </div>
 
-    <div class='flex justify-between mb-4 items-end'>
-      <div class='flex gap-4 items-end'>
-        <div>
-          <label class='text-sm'>Baud</label>
-          <select id='baud' class='bg-gray-700 border border-gray-600 rounded px-2 py-0.5 w-24'>
-            <option>4800</option>
-            <option>9600</option>
-            <option selected>115200</option>
-          </select>
+      <!-- 상단 설정 영역: 모바일에서 줄바꿈 -->
+      <div class="flex flex-col sm:flex-row sm:justify-between mb-4 gap-3 sm:items-end">
+        <div class="flex flex-wrap gap-3 sm:gap-4 items-end">
+          <div>
+            <label class="text-sm">Baud</label>
+            <select id="baud" class="bg-gray-700 border border-gray-600 rounded px-2 py-1 w-28">
+              <option>4800</option>
+              <option>9600</option>
+              <option selected>115200</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="text-sm">끝문자</label>
+            <select id="ending" class="bg-gray-700 border border-gray-600 rounded px-2 py-1 w-36">
+              <option value="\n">LF (\n)</option>
+              <option value="\r">CR (\r)</option>
+              <option value="\r\n" selected>CRLF (\r\n)</option>
+            </select>
+          </div>
         </div>
 
-        <div>
-          <label class='text-sm'>끝문자</label>
-          <select id='ending' class='bg-gray-700 border border-gray-600 rounded px-2 py-0.5 w-28'>
-            <option value='\n'>LF (\n)</option>
-            <option value='\r'>CR (\r)</option>
-            <option value='\r\n' selected>CRLF (\r\n)</option>
-          </select>
+        <div class="flex gap-2">
+          <button id="connectBtn" class="bg-gray-700 hover:bg-gray-600 px-4 py-1 rounded border border-emerald-500 text-emerald-200">
+            포트 연결
+          </button>
+          <button id="disconnectBtn" class="bg-gray-600 px-4 py-1 rounded border border-gray-500 text-gray-400 cursor-default" disabled>
+            해제됨
+          </button>
         </div>
       </div>
 
-      <div class='flex gap-2'>
-        <!-- 후보2: 포트 연결(기본) -->
-        <button id='connectBtn'
-                class='bg-gray-700 hover:bg-gray-600 px-4 py-0.5 rounded border border-emerald-500 text-emerald-200'>
-          포트 연결
+      <!-- 출력창: 모바일은 화면 높이 기준 -->
+      <div id="serialOutput"
+           class="bg-[#0D0D0D] p-3 rounded-lg h-[55vh] sm:h-[60vh] lg:h-[36rem] overflow-y-auto whitespace-pre-wrap mb-4 font-[FiraCode] font-thin text-white text-[14px] sm:text-[15px]">
+      </div>
+
+      <!-- 입력/전송 -->
+      <div class="flex gap-2 sm:gap-3 mb-3">
+        <input id="msgInput" type="text" placeholder="메시지 입력..."
+               class="flex-1 bg-gray-700 border border-gray-600 rounded px-3 py-2 sm:py-1" />
+        <button id="sendBtn" class="bg-gray-700 hover:bg-gray-600 px-4 py-2 sm:py-1 rounded border border-emerald-500 text-emerald-200">
+          전송
         </button>
-        <!-- 후보2: 해제됨(비활성) -->
-        <button id='disconnectBtn'
-                class='bg-gray-600 px-4 py-0.5 rounded border border-gray-500 text-gray-400 cursor-default'
-                disabled>
-          해제됨
+      </div>
+
+      <div class="flex items-center gap-4">
+        <button id="clearBtn" class="bg-gray-700 px-3 py-2 sm:py-1 rounded border border-gray-600 hover:bg-gray-600">
+          지우기
         </button>
+        <label class="flex items-center gap-2">
+          <input type="checkbox" id="autoScroll" checked />
+          자동 스크롤
+        </label>
       </div>
     </div>
 
-    <div id='serialOutput'
-     class="bg-[#0D0D0D] p-3 rounded-lg h-[36rem] overflow-y-auto whitespace-pre-wrap mb-4 
-            font-[FiraCode] font-thin text-white text-[15px]">
+    <!-- RIGHT PANEL (lg 이상에서만 보임) -->
+    <div id="presetPanel" class="hidden lg:block w-full lg:w-[40%] bg-gray-800 p-4 sm:p-5 rounded-xl shadow-lg border border-gray-700 text-sm">
+      <div class="flex justify-between items-center mb-4">
+        <h2 class="text-lg sm:text-xl font-bold">프리셋</h2>
+        <button id="closePresetBtn" class="text-xs bg-gray-700 hover:bg-gray-600 px-2 py-1 rounded border border-gray-600">
+          닫기
+        </button>
+      </div>
+
+      <div class="flex flex-wrap gap-2 mb-4">
+        <button id="importPreset" class="bg-gray-700 px-3 py-2 sm:py-1 rounded border border-gray-600 hover:bg-gray-600">
+          가져오기
+        </button>
+        <button id="exportPreset" class="bg-gray-700 px-3 py-2 sm:py-1 rounded border border-gray-600 hover:bg-gray-600">
+          내보내기
+        </button>
+        <button id="deletePreset" class="bg-gray-700 hover:bg-gray-600 px-3 py-2 sm:py-1 rounded border border-rose-500 text-rose-200">
+          전체 삭제
+        </button>
+      </div>
+
+      <div class="flex gap-2 mb-4">
+        <input id="cmdInput" type="text" placeholder="Command"
+               class="flex-1 bg-gray-700 border border-gray-600 rounded px-3 py-2 sm:py-1" />
+        <button id="addCmd" class="bg-gray-700 hover:bg-gray-600 px-4 py-2 sm:py-1 rounded border border-emerald-500 text-emerald-200">
+          추가
+        </button>
+      </div>
+
+      <div id="groupsContainer" class="flex flex-col gap-6"></div>
     </div>
 
-    <div class='flex gap-3 mb-3'>
-      <input id='msgInput' type='text' placeholder='메시지 입력...'
-            class='flex-1 bg-gray-700 border border-gray-600 rounded px-3 py-0.5'>
-      <!-- 후보2: 전송 = 초록 포인트 -->
-      <button id='sendBtn'
-              class='bg-gray-700 hover:bg-gray-600 px-4 py-0.5 rounded border border-emerald-500 text-emerald-200'>
-        전송
-      </button>
-    </div>
-
-    <div class='flex items-center gap-4'>
-      <!-- 후보2: 중립 회색 -->
-      <button id='clearBtn'
-              class='bg-gray-700 px-3 py-0.5 rounded border border-gray-600 hover:bg-gray-600'>
-        지우기
-      </button>
-      <label class='flex items-center gap-2'>
-        <input type='checkbox' id='autoScroll' checked> 자동 스크롤
-      </label>
-    </div>
   </div>
 
-  <!-- RIGHT PANEL (40%) -->
-  <div id="presetPanel" class='w-[40%] bg-gray-800 p-5 rounded-xl shadow-lg border border-gray-700 text-sm'>
-    <!-- 프리셋 제목 + 닫기 버튼 -->
-    <div class='flex justify-between items-center mb-4'>
-      <h2 class='text-xl font-bold'>프리셋</h2>
-      <!-- 후보2: 중립 회색 -->
-      <button id="closePresetBtn"
-              class="text-xs bg-gray-700 hover:bg-gray-600 px-2 py-0.5 rounded border border-gray-600">
-        닫기
-      </button>
-    </div>
+  <!-- 모바일 전용: 프리셋 오버레이(슬라이드 인) -->
+  <div id="presetOverlay" class="lg:hidden fixed inset-0 z-50 hidden">
+    <div id="presetBackdrop" class="absolute inset-0 bg-black/60"></div>
 
-    <div class='flex gap-2 mb-4'>
-      <!-- 후보2: 중립 회색 -->
-      <button id='importPreset'
-              class='bg-gray-700 px-3 py-0.5 rounded border border-gray-600 hover:bg-gray-600'>
-        가져오기
-      </button>
-      <button id='exportPreset'
-              class='bg-gray-700 px-3 py-0.5 rounded border border-gray-600 hover:bg-gray-600'>
-        내보내기
-      </button>
-      <!-- 후보2: 삭제 = 빨간 포인트 -->
-      <button id='deletePreset'
-              class='bg-gray-700 hover:bg-gray-600 px-3 py-0.5 rounded border border-rose-500 text-rose-200'>
-        전체 삭제
-      </button>
-    </div>
+    <div id="presetSheet"
+         class="absolute right-0 top-0 h-full w-[92%] max-w-md bg-gray-800 border-l border-gray-700 shadow-2xl
+                translate-x-full transition-transform duration-200 ease-out p-4">
+      <div class="flex justify-between items-center mb-4">
+        <h2 class="text-lg font-bold">프리셋</h2>
+        <button id="closePresetBtnMobile" class="text-xs bg-gray-700 hover:bg-gray-600 px-2 py-1 rounded border border-gray-600">
+          닫기
+        </button>
+      </div>
 
-    <div class='flex gap-2 mb-4'>
-      <input id='cmdInput' type='text' placeholder='Command'
-            class='flex-1 bg-gray-700 border border-gray-600 rounded px-3 py-0.5'>
-      <!-- 후보2: 추가 = 초록 포인트 -->
-      <button id='addCmd'
-              class='bg-gray-700 hover:bg-gray-600 px-4 py-0.5 rounded border border-emerald-500 text-emerald-200'>
-        추가
-      </button>
-    </div>
+      <div class="flex flex-wrap gap-2 mb-4">
+        <button id="importPresetMobile" class="bg-gray-700 px-3 py-2 rounded border border-gray-600 hover:bg-gray-600">
+          가져오기
+        </button>
+        <button id="exportPresetMobile" class="bg-gray-700 px-3 py-2 rounded border border-gray-600 hover:bg-gray-600">
+          내보내기
+        </button>
+        <button id="deletePresetMobile" class="bg-gray-700 hover:bg-gray-600 px-3 py-2 rounded border border-rose-500 text-rose-200">
+          전체 삭제
+        </button>
+      </div>
 
-    <div id='groupsContainer' class='flex flex-col gap-6'></div>
+      <div class="flex gap-2 mb-4">
+        <input id="cmdInputMobile" type="text" placeholder="Command"
+               class="flex-1 bg-gray-700 border border-gray-600 rounded px-3 py-2" />
+        <button id="addCmdMobile" class="bg-gray-700 hover:bg-gray-600 px-4 py-2 rounded border border-emerald-500 text-emerald-200">
+          추가
+        </button>
+      </div>
+
+      <div id="groupsContainerMobile" class="flex flex-col gap-6 overflow-y-auto h-[calc(100vh-200px)] pr-1"></div>
+    </div>
   </div>
-
-</div>
 
 <script>
 let port, reader, writer;
@@ -139,9 +161,9 @@ function savePresets(){ localStorage.setItem("presetGroups", JSON.stringify(pres
 function loadPresets(){ presetData = JSON.parse(localStorage.getItem("presetGroups") || "{}"); renderGroups(); }
 
 /* ============================================================
-   IMPORT with GROUP auto-detection
+   IMPORT with GROUP auto-detection (공통 함수)
 ============================================================ */
-document.getElementById("importPreset").onclick = () => {
+function doImportPreset(){
   const input = document.createElement("input");
   input.type = "file";
   input.accept = ".txt,application/json";
@@ -151,7 +173,7 @@ document.getElementById("importPreset").onclick = () => {
     const reader2 = new FileReader();
 
     reader2.onload = () => {
-      let text = reader2.result.trim();
+      let text = String(reader2.result || "").trim();
       let json = null;
 
       try { json = JSON.parse(text); } catch(err){ json = null; }
@@ -162,13 +184,13 @@ document.getElementById("importPreset").onclick = () => {
         let currentGroup = "Default";
 
         json.forEach(line => {
-          line = line.trim();
+          line = String(line).trim();
           if (line.startsWith("[GROUP]")) {
             currentGroup = line.replace("[GROUP]", "").trim();
             if (!groups[currentGroup]) groups[currentGroup] = [];
           } else {
             if (!groups[currentGroup]) groups[currentGroup] = [];
-            groups[currentGroup].push(line);
+            if (line.length) groups[currentGroup].push(line);
           }
         });
 
@@ -214,89 +236,138 @@ document.getElementById("importPreset").onclick = () => {
   };
 
   input.click();
-};
+}
 
 /* ============================================================
-   RENDER PRESETS (no delete per item)
+   RENDER PRESETS (desktop + mobile 동시에 렌더)
 ============================================================ */
 function renderGroups(){
-  const container = document.getElementById("groupsContainer");
-  container.innerHTML = "";
+  const containerDesktop = document.getElementById("groupsContainer");
+  const containerMobile  = document.getElementById("groupsContainerMobile");
+
+  if (containerDesktop) containerDesktop.innerHTML = "";
+  if (containerMobile)  containerMobile.innerHTML  = "";
 
   Object.entries(presetData).forEach(([group, cmds]) => {
 
-    const box = document.createElement("div");
-    box.className = "bg-gray-700 p-3 rounded-lg border border-gray-600";
+    function makeBox(){
+      const box = document.createElement("div");
+      box.className = "bg-gray-700 p-3 rounded-lg border border-gray-600";
 
-    const header = document.createElement("div");
-    header.className = "mb-2";
+      const header = document.createElement("div");
+      header.className = "mb-2";
 
-    const title = document.createElement("h3");
-    title.className = "font-semibold text-blue-300";
-    title.textContent = group;
+      const title = document.createElement("h3");
+      title.className = "font-semibold text-blue-300";
+      title.textContent = group;
 
-    header.appendChild(title);
-    box.appendChild(header);
+      header.appendChild(title);
+      box.appendChild(header);
 
-    const list = document.createElement("div");
-    list.className = "flex flex-wrap gap-2";
+      const list = document.createElement("div");
+      list.className = "flex flex-wrap gap-2";
 
-    cmds.forEach(cmd => {
-      const tag = document.createElement("div");
-      tag.className =
-        "inline-flex items-center bg-gray-600 text-white px-2 py-0.5 rounded-full cursor-pointer text-sm";
+      (cmds || []).forEach(cmd => {
+        const tag = document.createElement("div");
+        tag.className =
+          "inline-flex items-center bg-gray-600 text-white px-2 py-1 rounded-full cursor-pointer text-sm";
 
-      const textSpan = document.createElement("span");
-      textSpan.textContent = cmd;
+        const textSpan = document.createElement("span");
+        textSpan.textContent = cmd;
 
-      textSpan.onclick = () => {
-        if (!writer) return alert("포트가 열려 있지 않습니다.");
-        writer.write(encoder.encode(cmd + safeEnding()));
-      };
+        textSpan.onclick = () => {
+          if (!writer) return alert("포트가 열려 있지 않습니다.");
+          writer.write(encoder.encode(cmd + safeEnding()));
+        };
 
-      tag.appendChild(textSpan);
-      list.appendChild(tag);
-    });
+        tag.appendChild(textSpan);
+        list.appendChild(tag);
+      });
 
-    box.appendChild(list);
-    container.appendChild(box);
+      box.appendChild(list);
+      return box;
+    }
+
+    const boxDesktop = makeBox();
+    const boxMobile  = makeBox();
+
+    if (containerDesktop) containerDesktop.appendChild(boxDesktop);
+    if (containerMobile)  containerMobile.appendChild(boxMobile);
   });
 }
 
 /* ============================================================
-   기타 기능
+   기타 기능 (공통 함수)
 ============================================================ */
-loadPresets();
-
-document.getElementById("addCmd").onclick = () => {
-  const cmd = document.getElementById("cmdInput").value.trim();
-  if(!cmd) return;
+function addCommand(cmd){
+  const v = String(cmd || "").trim();
+  if(!v) return;
 
   if(!presetData["Default"]) presetData["Default"] = [];
-  presetData["Default"].push(cmd);
+  presetData["Default"].push(v);
 
   savePresets();
   renderGroups();
+}
 
-  document.getElementById("cmdInput").value = "";
-};
-
-document.getElementById("deletePreset").onclick = () => {
+function deleteAllPresets(){
   if(!confirm("모든 프리셋을 삭제하시겠습니까?")) return;
   presetData = {};
   savePresets();
   renderGroups();
-};
+}
 
-document.getElementById("exportPreset").onclick = () => {
+function exportPresets(){
   const blob = new Blob([JSON.stringify(presetData,null,2)],{type:"application/json"});
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
   a.download = "presets.json";
   a.click();
+}
+
+/* ============================================================
+   초기 로드
+============================================================ */
+loadPresets();
+
+/* ============================================================
+   데스크톱 버튼 핸들러
+============================================================ */
+document.getElementById("importPreset").onclick = doImportPreset;
+
+document.getElementById("addCmd").onclick = () => {
+  const el = document.getElementById("cmdInput");
+  addCommand(el.value);
+  el.value = "";
 };
 
+document.getElementById("deletePreset").onclick = deleteAllPresets;
+document.getElementById("exportPreset").onclick = exportPresets;
+
+/* ============================================================
+   모바일 버튼 핸들러(같은 로직 재사용)
+============================================================ */
+document.getElementById("importPresetMobile").onclick = doImportPreset;
+document.getElementById("exportPresetMobile").onclick = exportPresets;
+document.getElementById("deletePresetMobile").onclick = deleteAllPresets;
+
+document.getElementById("addCmdMobile").onclick = () => {
+  const el = document.getElementById("cmdInputMobile");
+  addCommand(el.value);
+  el.value = "";
+};
+
+document.getElementById("cmdInputMobile").addEventListener("keydown", e => {
+  if(e.key === "Enter"){
+    e.preventDefault();
+    document.getElementById("addCmdMobile").click();
+  }
+});
+
+/* ============================================================
+   Serial
+============================================================ */
 async function readLoop(){
   try{
     reader = port.readable.getReader();
@@ -359,61 +430,88 @@ function updateConnectionUI(connected){
   if(connected){
     c.disabled = true;
     c.className =
-      "bg-gray-700 px-4 py-0.5 rounded border border-emerald-500 text-emerald-200 cursor-default";
+      "bg-gray-700 px-4 py-1 rounded border border-emerald-500 text-emerald-200 cursor-default";
     c.textContent = "연결됨";
 
     d.disabled = false;
     d.className =
-      "bg-gray-700 hover:bg-gray-600 px-4 py-0.5 rounded border border-rose-500 text-rose-200";
+      "bg-gray-700 hover:bg-gray-600 px-4 py-1 rounded border border-rose-500 text-rose-200";
     d.textContent = "해제";
   } else {
     c.disabled = false;
     c.className =
-      "bg-gray-700 hover:bg-gray-600 px-4 py-0.5 rounded border border-emerald-500 text-emerald-200";
+      "bg-gray-700 hover:bg-gray-600 px-4 py-1 rounded border border-emerald-500 text-emerald-200";
     c.textContent = "포트 연결";
 
     d.disabled = true;
     d.className =
-      "bg-gray-600 px-4 py-0.5 rounded border border-gray-500 text-gray-400 cursor-default";
+      "bg-gray-600 px-4 py-1 rounded border border-gray-500 text-gray-400 cursor-default";
     d.textContent = "해제됨";
   }
 }
 
 /* ============================================================
-   프리셋 패널 열기/닫기
+   프리셋 패널 열기/닫기 (PC + 모바일 오버레이)
 ============================================================ */
-const consolePanelEl   = document.getElementById("consolePanel");
-const presetPanelEl    = document.getElementById("presetPanel");
-const togglePresetBtn  = document.getElementById("togglePresetBtn");
-const closePresetBtn   = document.getElementById("closePresetBtn");
+const consolePanelEl  = document.getElementById("consolePanel");
+const presetPanelEl   = document.getElementById("presetPanel");
+const togglePresetBtn = document.getElementById("togglePresetBtn");
+const closePresetBtn  = document.getElementById("closePresetBtn");
+
+// mobile overlay
+const presetOverlay = document.getElementById("presetOverlay");
+const presetSheet   = document.getElementById("presetSheet");
+const presetBackdrop= document.getElementById("presetBackdrop");
+const closePresetBtnMobile = document.getElementById("closePresetBtnMobile");
+
+function isMobile(){
+  return window.matchMedia("(max-width: 1023px)").matches; // lg 미만
+}
 
 function openPresetPanel(){
-  if (!presetPanelEl || !consolePanelEl) return;
-  presetPanelEl.classList.remove("hidden");   // 패널 표시
-  consolePanelEl.classList.remove("w-full");  // 풀폭 해제
-  if (!consolePanelEl.classList.contains("w-[60%]")) {
-    consolePanelEl.classList.add("w-[60%]");  // 60% 폭으로 복귀
+  if (isMobile()){
+    // 모바일: 오버레이 슬라이드
+    presetOverlay.classList.remove("hidden");
+    requestAnimationFrame(() => presetSheet.classList.remove("translate-x-full"));
+  } else {
+    // 데스크톱: 오른쪽 패널 표시
+    presetPanelEl.classList.remove("hidden");
+    // 데스크톱에서 콘솔 폭 보정
+    consolePanelEl.classList.remove("w-full");
+    if (!consolePanelEl.classList.contains("lg:w-[60%]")) {
+      consolePanelEl.classList.add("lg:w-[60%]");
+    }
   }
 }
 
 function closePresetPanel(){
-  if (!presetPanelEl || !consolePanelEl) return;
-  presetPanelEl.classList.add("hidden");      // 패널 숨김
-  consolePanelEl.classList.remove("w-[60%]");
-  if (!consolePanelEl.classList.contains("w-full")) {
-    consolePanelEl.classList.add("w-full");   // 콘솔을 100% 폭으로
+  if (isMobile()){
+    presetSheet.classList.add("translate-x-full");
+    setTimeout(() => presetOverlay.classList.add("hidden"), 200);
+  } else {
+    presetPanelEl.classList.add("hidden");
+    // 콘솔은 lg에서만 풀폭 처리되도록
+    consolePanelEl.classList.add("w-full");
   }
 }
 
-// 상단 "프리셋" 버튼: 항상 "열기" 역할
-if (togglePresetBtn) {
-  togglePresetBtn.addEventListener("click", openPresetPanel);
-}
+togglePresetBtn.addEventListener("click", openPresetPanel);
+closePresetBtn.addEventListener("click", closePresetPanel);
+closePresetBtnMobile.addEventListener("click", closePresetPanel);
+presetBackdrop.addEventListener("click", closePresetPanel);
 
-// 프리셋 내부 "닫기" 버튼
-if (closePresetBtn) {
-  closePresetBtn.addEventListener("click", closePresetPanel);
-}
+// 화면 크기 바뀔 때 상태 정리(모바일→데스크톱 / 데스크톱→모바일)
+window.addEventListener("resize", () => {
+  if (isMobile()){
+    // 데스크톱 패널은 숨김 유지
+    presetPanelEl.classList.add("hidden");
+    consolePanelEl.classList.add("w-full");
+  } else {
+    // 모바일 오버레이 닫기
+    presetSheet.classList.add("translate-x-full");
+    presetOverlay.classList.add("hidden");
+  }
+});
 </script>
 
 </body>
